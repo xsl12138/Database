@@ -1,0 +1,26 @@
+ -- 6) 查找相似的理财客户
+--   请用一条SQL语句实现该查询：
+select * from(
+    select * , rank() over(partition by pac order by common desc, pbc asc) as crank
+    from(
+        select distinct t1.pro_c_id as pac, t2.pro_c_id as pbc, count(t2.pro_c_id) as common
+        from property as t1
+        join(
+            select distinct pro_c_id, pro_pif_id # 用户id和业务id
+            from property
+            where pro_type = 1  # 理财产品
+        )as t2
+        on t2.pro_pif_id = t1.pro_pif_id    # 连起来之后每一行就有了（A客户，B客户，他们共同拥有的产品id）这样的信息（但注意此时A客户和B客户可能相同）
+        where pro_type = 1 and t2.pro_c_id != t1.pro_c_id   # 将A客户和B客户不是同一个人的那些行找出来
+        group by t1.pro_c_id, t2.pro_c_id # 先按pac分组，再按pbc分组
+    )as t3
+)as t4
+where crank < 3;    # 取前两位客户
+
+
+
+
+
+
+
+/*  end  of  your code  */

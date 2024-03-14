@@ -1,0 +1,51 @@
+use finance1;
+drop trigger if exists before_property_inserted;
+-- 请在适当的地方补充代码，完成任务要求：
+delimiter $$
+CREATE TRIGGER before_property_inserted BEFORE INSERT ON property
+FOR EACH ROW 
+BEGIN
+    declare tp int default new.pro_type; # default 默认值
+    declare id int default new.pro_pif_id;
+    declare msg varchar(50);    # 错误提示
+    if tp = 1 then
+        if id not in (select p_id from finances_product) then
+            set msg = concat("finances product #", id, " not found!");
+            # concat函数将多个字符串连接成一个字符串
+        end if;
+    elseif tp = 2 then
+        if id not in (select i_id from insurance) then
+            set msg = concat("insurance #", id, " not found!");
+        end if;
+    elseif tp = 3 then
+        if id not in (select f_id from fund) then
+            set msg = concat("fund #", id, " not found!");
+        end if;
+    else
+        set msg = concat("type ", tp, " is illegal!");
+    end if;
+
+    if msg is not null then # 如果有异常
+        signal sqlstate "45000" set message_text = msg;
+        # signal sqlstate语句：抛出异常状态
+    end if;
+END$$
+ 
+delimiter ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

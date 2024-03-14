@@ -1,0 +1,31 @@
+ -- 12) 综合客户表(client)、资产表(property)、理财产品表(finances_product)、保险表(insurance)和
+ --     基金表(fund)，列出客户的名称、身份证号以及投资总金额（即投资本金，
+ --     每笔投资金额=商品数量*该产品每份金额)，注意投资金额按类型需要查询不同的表，
+ --     投资总金额是客户购买的各类资产(理财,保险,基金)投资金额的总和，总金额命名为total_amount。
+ --     查询结果按总金额降序排序。
+ -- 请用一条SQL语句实现该查询：
+select c_name, c_id_card, ifnull(sum(amount), 0) as total_amount    # ifnull函数将空值转换成0值
+from client left outer join (
+    select pro_c_id, pro_quantity * p_amount as amount_p
+    from property, finances_product
+    where pro_type = 1 and pro_pif_id = p_id
+    union all   # UNION 操作符用于合并两个或多个 SELECT 语句的结果集。UNION 内部的 SELECT 语句必须拥有相同数量的列。列也必须拥有相似的数据类型。同时，每条 SELECT 语句中的列的顺序必须相同。
+    # 默认地，UNION 操作符选取不同的值。如果允许重复的值，使用 UNION ALL即可。
+    select pro_c_id, pro_quantity * i_amount as amount_i
+    from property, insurance
+    where pro_type = 2 and pro_pif_id = i_id
+    union all
+    select pro_c_id, pro_quantity * f_amount as amount_f
+    from property, fund
+    where pro_type = 3 and pro_pif_id = f_id
+) as a(pro_c_id, amount) on c_id = pro_c_id
+group by c_id
+order by total_amount desc
+ 
+
+
+
+
+
+
+/*  end  of  your code  */ 
